@@ -1,5 +1,6 @@
 ﻿using IMS.CoreBusiness;
 using IMS.UseCases.PluginInterfaces;
+using System.Linq;
 
 namespace IMS.Plugins.InMemory
 {
@@ -38,6 +39,29 @@ namespace IMS.Plugins.InMemory
             if (string.IsNullOrWhiteSpace(name)) return await Task.FromResult(_inventories);
 
             return _inventories.Where(x => x.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public async Task<Inventory?> GetInventoryByIdAsync(int id)
+        {
+            return await Task.FromResult(_inventories.FirstOrDefault(x => x.Id == id));
+        }
+
+        public Task UpdateInventoryAsync(Inventory inventory)
+        {
+            if (_inventories.Any(x => x.Id != inventory.Id && x.Name.Equals(inventory.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                return Task.CompletedTask; 
+            }
+
+            var inventoryToUpdate = _inventories.FirstOrDefault(x => x.Id == inventory.Id);
+            if (inventoryToUpdate != null)
+            {
+                inventoryToUpdate.Name = inventory.Name;
+                inventoryToUpdate.Quantity = inventory.Quantity;
+                inventoryToUpdate.Price = inventory.Price;
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

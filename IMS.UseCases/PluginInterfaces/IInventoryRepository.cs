@@ -1,7 +1,4 @@
 ﻿using IMS.CoreBusiness;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace IMS.UseCases.PluginInterfaces
 {
@@ -9,5 +6,7 @@ namespace IMS.UseCases.PluginInterfaces
     {
         Task AddInventoryAsync(Inventory inventory);
         Task<IEnumerable<Inventory>> GetInventoriesByNameAsync(string name);
+        Task<Inventory?> GetInventoryByIdAsync(int id);
+        Task UpdateInventoryAsync(Inventory inventory);
     }
 }
