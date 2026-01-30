@@ -1,0 +1,22 @@
+﻿.search-result {
+    overflow-y: auto;
+    max-height: 300px;
+    border: 1px solid silver;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+div ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+div ul li {
+    cursor: pointer;
+    padding-left: 1rem;
+}
+
+div ul li:hover {
+    background-color: lightgray;
+}
