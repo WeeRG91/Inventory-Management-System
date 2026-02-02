@@ -9,7 +9,7 @@ namespace IMS.UseCases.Inventories
 
         public DeleteInventoryUseCase(IInventoryRepository inventoryRepository)
         {
-            this._inventoryRepository = inventoryRepository;
+            _inventoryRepository = inventoryRepository;
         }
         public async Task ExecuteAsync(int id)
         {

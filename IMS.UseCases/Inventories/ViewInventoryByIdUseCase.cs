@@ -13,7 +13,7 @@ namespace IMS.UseCases.Inventories
 
         public ViewInventoryByIdUseCase(IInventoryRepository inventoryRepository)
         {
-            this._inventoryRepository = inventoryRepository;
+            _inventoryRepository = inventoryRepository;
         }
         public async Task<Inventory?> ExecuteAsync(int id)
         {

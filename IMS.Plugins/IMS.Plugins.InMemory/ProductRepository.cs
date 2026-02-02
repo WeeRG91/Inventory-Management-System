@@ -44,7 +44,42 @@ namespace IMS.Plugins.InMemory
 
         public async Task<Product?> GetProductByIdAsync(int id)
         {
-            return await Task.FromResult(_products.FirstOrDefault(x => x.Id == id));
+            var product = await Task.FromResult(_products.FirstOrDefault(x => x.Id == id));
+            Product? newProduct = null;
+            if (product is not null)
+            {
+                newProduct = new Product();
+                newProduct.Id = product.Id;
+                newProduct.Name = product.Name;
+                newProduct.Price = product.Price;
+                newProduct.Quantity = product.Quantity;
+                newProduct.ProductInventories = new List<ProductInventory>();
+                if (product.ProductInventories != null && product.ProductInventories.Count > 0)
+                {
+                    foreach(var productInventory in product.ProductInventories)
+                    {
+                        var newProductInventory = new ProductInventory
+                        {
+                            InventoryId = productInventory.InventoryId,
+                            ProductId = productInventory.ProductId,
+                            Product = product,
+                            Inventory = new Inventory(),
+                            InventoryQuantity = productInventory.InventoryQuantity
+                        };
+                        if (productInventory.Inventory is not null)
+                        {
+                            newProductInventory.Inventory.Id = productInventory.Inventory.Id;
+                            newProductInventory.Inventory.Name = productInventory.Inventory.Name;
+                            newProductInventory.Inventory.Price = productInventory.Inventory.Price;
+                            newProductInventory.Inventory.Quantity = productInventory.Inventory.Quantity;
+                        }
+
+                        newProduct.ProductInventories.Add(newProductInventory);
+                    }
+                }
+            }
+
+            return await Task.FromResult(newProduct);
         }
 
         public async Task<IEnumerable<Product>> GetProductsByNameAsync(string name)
@@ -67,6 +102,7 @@ namespace IMS.Plugins.InMemory
                 productToUpdate.Name = product.Name;
                 productToUpdate.Quantity = product.Quantity;
                 productToUpdate.Price = product.Price;
+                productToUpdate.ProductInventories = product.ProductInventories;
             }
 
             return Task.CompletedTask;

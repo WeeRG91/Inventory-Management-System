@@ -10,12 +10,12 @@ namespace IMS.UseCases.Inventories
 
         public AddInventoryUseCase(IInventoryRepository inventoryRepository)
         {
-            this._inventoryRepository = inventoryRepository;
+            _inventoryRepository = inventoryRepository;
         }
 
         public async Task ExecuteAsync(Inventory inventory)
         {
-            await this._inventoryRepository.AddInventoryAsync(inventory);
+            await _inventoryRepository.AddInventoryAsync(inventory);
         }
     }
 }
