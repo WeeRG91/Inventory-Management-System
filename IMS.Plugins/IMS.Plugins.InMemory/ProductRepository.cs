@@ -6,14 +6,16 @@ namespace IMS.Plugins.InMemory
     public class ProductRepository : IProductRepository
     {
         private List<Product> _products;
+        private readonly IInventoryRepository _inventoryRepository;
 
-        public ProductRepository()
+        public ProductRepository(IInventoryRepository inventoryRepository)
         {
             _products =
             [
                 new() { Id = 1, Name = "Bike", Quantity = 10, Price = 150 },
                 new() { Id = 2, Name = "Car", Quantity = 3, Price = 350 },
             ]; 
+            _inventoryRepository = inventoryRepository;
         }
 
         public Task AddProductAsync(Product product)
@@ -68,10 +70,15 @@ namespace IMS.Plugins.InMemory
                         };
                         if (productInventory.Inventory is not null)
                         {
-                            newProductInventory.Inventory.Id = productInventory.Inventory.Id;
-                            newProductInventory.Inventory.Name = productInventory.Inventory.Name;
-                            newProductInventory.Inventory.Price = productInventory.Inventory.Price;
-                            newProductInventory.Inventory.Quantity = productInventory.Inventory.Quantity;
+                            var inventory = await _inventoryRepository.GetInventoryByIdAsync(productInventory.Inventory.Id);
+
+                            if (inventory != null)
+                            {
+                                newProductInventory.Inventory.Id = inventory.Id;
+                                newProductInventory.Inventory.Name = inventory.Name;
+                                newProductInventory.Inventory.Price = inventory.Price;
+                                newProductInventory.Inventory.Quantity = inventory.Quantity;
+                            }
                         }
 
                         newProduct.ProductInventories.Add(newProductInventory);

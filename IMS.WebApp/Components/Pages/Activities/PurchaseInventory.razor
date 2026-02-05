@@ -4,6 +4,8 @@
 
 @rendermode InteractiveServer
 
+@inject IJSRuntime JSRuntime
+
 @inject IViewInventoriesByNameUseCase viewInventoriesByNameUseCase
 @inject IViewInventoryByIdUseCase viewInventoryByIdUseCase
 @inject IPurchaseInventoryUseCase purchaseInventoryUseCase
@@ -12,7 +14,7 @@
 
 <br />
 
-<EditForm Model="purchaseViewModel" OnValidSubmit="Purchase">
+<EditForm id="purchase-form" Model="purchaseViewModel" OnValidSubmit="Purchase">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -53,6 +55,16 @@
 
     private Inventory? selectedInventory = null;
 
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender)
+        {
+            JSRuntime.InvokeVoidAsync("preventFormSubmission", "purchase-form");
+        }
+    }
+
     private List<ItemViewModel>? SearchInventory(string name)
     {
         var list = viewInventoriesByNameUseCase.ExecuteAsync(name).GetAwaiter().GetResult();
@@ -71,14 +83,16 @@
 
     private async Task Purchase()
     {
-        await purchaseInventoryUseCase.ExecuteAsync(
-            this.purchaseViewModel.PONomber,
-            selectedInventory,
-            this.purchaseViewModel.QuantityToPurchse,
-            "Frank"
-        );
-
-        this.purchaseViewModel = new PurchaseViewModel();
-        this.selectedInventory = null;
+        if (selectedInventory != null)
+        {
+            await purchaseInventoryUseCase.ExecuteAsync(
+                this.purchaseViewModel.PONomber,
+                selectedInventory,
+                this.purchaseViewModel.QuantityToPurchse,
+                "Frank"
+            );
+            this.purchaseViewModel = new PurchaseViewModel();
+            this.selectedInventory = null;
+        }
     }
 }

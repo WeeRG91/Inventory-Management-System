@@ -4,7 +4,7 @@ namespace IMS.WebApp.ViewModels
 {
     public class PurchaseViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Please enter the purchase order number.")]
         public string PONomber { get; set; } = string.Empty;
         [Range(minimum: 1, maximum: int.MaxValue, ErrorMessage = "You have to select an inventory.")]
         public int InventoryId { get; set; }
