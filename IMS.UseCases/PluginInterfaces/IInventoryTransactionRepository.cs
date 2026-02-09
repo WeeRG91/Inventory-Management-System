@@ -6,5 +6,6 @@ namespace IMS.UseCases.PluginInterfaces
     {
         void PurchaseAsync(string purchaseOrderNumber, Inventory inventory, int quantity, string doneBy, double price);
         void ProduceAsync(string productionNumber, Inventory inventory, int quantity, string doneBy, double price);
+        Task<IEnumerable<InventoryTransaction>> GetInventoryTransactionsAsync(string inventoryName, DateTime? dateFrom, DateTime? dateTo, InventoryTransactionType? inventoryTransactionType);
     }
 }

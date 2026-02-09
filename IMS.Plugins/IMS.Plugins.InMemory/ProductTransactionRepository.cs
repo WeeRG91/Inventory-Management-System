@@ -85,5 +85,34 @@ namespace IMS.Plugins.InMemory
 
             return Task.CompletedTask;
         }
+
+        public async Task<IEnumerable<ProductTransaction>> GetProductTransactionsAsync(string name, DateTime? dateFrom, DateTime? dateTo, ProductTransactionType? productTransactionType)
+        {
+            var products = (await _productRepository.GetProductsByNameAsync(name)).ToList();
+
+            var query = from proTrans in _productTransactions
+                        join pro in products on proTrans.ProductId equals pro.Id
+                        where
+                            (string.IsNullOrWhiteSpace(name) || pro.Name.ToLower().IndexOf(name.ToLower()) >= 0) &&
+                            (!dateFrom.HasValue || proTrans.TransactionDate >= dateFrom.Value.Date) &&
+                            (!dateTo.HasValue || proTrans.TransactionDate <= dateTo.Value.Date) &&
+                            (!productTransactionType.HasValue || proTrans.ActivityType == productTransactionType)
+                        select new ProductTransaction
+                        {
+                            Id = proTrans.Id,
+                            Product = pro,
+                            ProductId = proTrans.ProductId,
+                            ProductionNumber = proTrans.ProductionNumber,
+                            SONumber = proTrans.SONumber,
+                            QuantityBefore = proTrans.QuantityBefore,
+                            QuantityAfter = proTrans.QuantityAfter,
+                            ActivityType = proTrans.ActivityType,
+                            TransactionDate = proTrans.TransactionDate,
+                            DoneBy = proTrans.DoneBy,
+                            UnitPrice = proTrans.UnitPrice,
+                        };
+
+            return query;
+        }
     }
 }
