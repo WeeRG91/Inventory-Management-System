@@ -65,12 +65,17 @@
         }
     }
 
-    private List<ItemViewModel>? SearchInventory(string name)
+    private async Task<List<ItemViewModel>> SearchInventory(string name)
     {
-        var list = viewInventoriesByNameUseCase.ExecuteAsync(name).GetAwaiter().GetResult();
-        if (list is null) return null;
+        var list = await viewInventoriesByNameUseCase.ExecuteAsync(name);
 
-        return list.Select(x => new ItemViewModel { Id = x.Id, Name = x.Name })?.ToList();
+        if (list is null) 
+            return new List<ItemViewModel>();
+
+        return list.Select(x => new ItemViewModel { 
+            Id = x.Id, 
+            Name = x.Name 
+        }).ToList();
     }
 
     private async Task HandleItemSelected(ItemViewModel item)

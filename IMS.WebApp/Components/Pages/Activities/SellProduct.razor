@@ -1,4 +1,4 @@
-﻿@page "/produce-product"
+﻿@page "/sell-product"
 @using static IMS.WebApp.Components.Controls.Common.AutoCompleteComponent
 
 @rendermode InteractiveServer
@@ -7,19 +7,20 @@
 
 @inject IViewProductsByNameUseCase viewProductsByNameUseCase
 @inject IViewProductByIdUseCase viewProductByIdUseCase
-@inject IProduceProductUseCase produceProductUseCase
+@inject ISellProductUseCase sellProductUseCase
 
-<h3>Produce Product</h3>
 
-<br/>
+<h3>Sell Product</h3>
 
-<EditForm id="produce-form" Model="produceViewModel" OnValidSubmit="Produce">
+<br />
+
+<EditForm id="sell-form" Model="sellViewModel" OnValidSubmit="Sell">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
-        <label for="po">Production #</label>
-        <InputText id="po" @bind-Value="produceViewModel.ProductionNumber" class="form-control" />
+        <label for="po">Seles #</label>
+        <InputText id="po" @bind-Value="sellViewModel.SalesOrderNumber" class="form-control" />
     </div>
 
     <br />
@@ -27,7 +28,7 @@
     <div class="card">
         <div class="card-body">
             <div class="form-group">
-                <AutoCompleteComponent Label="Product to produce" SearchFunction="SearchProduct" OnItemSelected="HandleItemSelected" />
+                <AutoCompleteComponent Label="Product to sell" SearchFunction="SearchProduct" OnItemSelected="HandleItemSelected" />
             </div>
         </div>
     </div>
@@ -36,7 +37,14 @@
 
     <div class="form-group">
         <label for="quantity">Quantity</label>
-        <InputNumber id="quantity" @bind-Value="produceViewModel.QuantityToProduce" class="form-control" />
+        <InputNumber id="quantity" @bind-Value="sellViewModel.QuantityToSell" class="form-control" />
+    </div>
+
+    <br />
+
+    <div class="form-group">
+        <label for="price">Unit price</label>
+        <InputNumber id="price" @bind-Value="sellViewModel.UnitPrice" class="form-control" />
     </div>
 
     <br />
@@ -45,7 +53,7 @@
 </EditForm>
 
 @code {
-    private ProduceViewModel produceViewModel = new ProduceViewModel();
+    private SellViewModel sellViewModel = new SellViewModel();
     private Product? selectedProduct = null;
 
     protected override void OnAfterRender(bool firstRender)
@@ -54,7 +62,7 @@
 
         if (firstRender)
         {
-            JSRuntime.InvokeVoidAsync("preventFormSubmission", "produce-form");
+            JSRuntime.InvokeVoidAsync("preventFormSubmission", "sell-form");
         }
     }
 
@@ -62,12 +70,13 @@
     {
         var list = await viewProductsByNameUseCase.ExecuteAsync(name);
 
-        if (list is null) 
+        if (list is null)
             return new List<ItemViewModel>();
 
-        return list.Select(x => new ItemViewModel { 
-            Id = x.Id, 
-            Name = x.Name 
+        return list.Select(x => new ItemViewModel
+        {
+            Id = x.Id,
+            Name = x.Name
         }).ToList();
     }
 
@@ -75,21 +84,23 @@
     {
         selectedProduct = await viewProductByIdUseCase.ExecuteAsync(item.Id) ?? new Product();
 
-        this.produceViewModel.ProductId = item.Id;
-        this.produceViewModel.Product = selectedProduct;
+        this.sellViewModel.ProductId = item.Id;
+        this.sellViewModel.Product = selectedProduct;
+        this.sellViewModel.UnitPrice = selectedProduct.Price;
     }
 
-    private async Task Produce()
+    private async Task Sell()
     {
         if (selectedProduct != null)
         {
-            await produceProductUseCase.ExecuteAsync(
-                this.produceViewModel.ProductionNumber,
+            await sellProductUseCase.ExecuteAsync(
+                this.sellViewModel.SalesOrderNumber,
                 selectedProduct,
-                this.produceViewModel.QuantityToProduce,
+                this.sellViewModel.QuantityToSell,
+                this.sellViewModel.UnitPrice,
                 "Frank"
             );
-            this.produceViewModel = new ProduceViewModel();
+            this.sellViewModel = new SellViewModel();
             this.selectedProduct = null;
         }
     }
