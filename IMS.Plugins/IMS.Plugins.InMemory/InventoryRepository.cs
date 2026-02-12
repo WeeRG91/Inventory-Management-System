@@ -1,6 +1,5 @@
 ﻿using IMS.CoreBusiness;
 using IMS.UseCases.PluginInterfaces;
-using System.Linq;
 
 namespace IMS.Plugins.InMemory
 {

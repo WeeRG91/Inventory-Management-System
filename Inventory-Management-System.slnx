@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/IMS.Plugins/">
+    <Project Path="IMS.Plugins/IMS.Plugins.EFCoreSql/IMS.Plugins.EFCoreSql.csproj" Id="b5576f5a-4af5-4738-8b15-fa0032c51d5d" />
     <Project Path="IMS.Plugins/IMS.Plugins.InMemory/IMS.Plugins.InMemory.csproj" />
   </Folder>
   <Project Path="IMS.CoreBusiness/IMS.CoreBusiness.csproj" />
