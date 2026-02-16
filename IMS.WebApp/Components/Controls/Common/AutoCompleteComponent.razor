@@ -71,7 +71,7 @@
         if (item is not null)
         {
             this.selectedItem = item;
-            this.userInput = item?.Name ?? string.Empty;
+            this._userInput = item?.Name ?? string.Empty;
             this.SearchResults = null;
             OnItemSelected.InvokeAsync(item);
         }

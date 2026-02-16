@@ -1,10 +1,14 @@
 ﻿@page "/sell-product"
+
+@attribute [Authorize(Policy = "Sales")]
+
 @using static IMS.WebApp.Components.Controls.Common.AutoCompleteComponent
 
 @rendermode InteractiveServer
 
 @inject IJSRuntime JSRuntime
 
+@inject AuthenticationStateProvider authenticationStateProvider
 @inject IViewProductsByNameUseCase viewProductsByNameUseCase
 @inject IViewProductByIdUseCase viewProductByIdUseCase
 @inject ISellProductUseCase sellProductUseCase
@@ -56,6 +60,13 @@
     private SellViewModel sellViewModel = new SellViewModel();
     private Product? selectedProduct = null;
 
+    private AuthenticationState? authenticationState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
@@ -91,17 +102,24 @@
 
     private async Task Sell()
     {
-        if (selectedProduct != null)
+        string userName = string.Empty;
+
+        if (authenticationState?.User?.Identity?.IsAuthenticated ?? false)
         {
-            await sellProductUseCase.ExecuteAsync(
-                this.sellViewModel.SalesOrderNumber,
-                selectedProduct,
-                this.sellViewModel.QuantityToSell,
-                this.sellViewModel.UnitPrice,
-                "Frank"
-            );
-            this.sellViewModel = new SellViewModel();
-            this.selectedProduct = null;
+            userName = authenticationState.User.Identity.Name ?? string.Empty;
+
+            if (selectedProduct != null)
+            {
+                await sellProductUseCase.ExecuteAsync(
+                    this.sellViewModel.SalesOrderNumber,
+                    selectedProduct,
+                    this.sellViewModel.QuantityToSell,
+                    this.sellViewModel.UnitPrice,
+                    userName
+                );
+                this.sellViewModel = new SellViewModel();
+                this.selectedProduct = null;
+            }
         }
     }
 }

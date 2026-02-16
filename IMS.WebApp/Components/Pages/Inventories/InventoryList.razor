@@ -1,5 +1,7 @@
 ﻿@page "/inventories"
 
+@attribute [Authorize(Policy = "Inventory")]
+
 <PageTitle>Inventories</PageTitle>
 
 <h1>Inventory List</h1>

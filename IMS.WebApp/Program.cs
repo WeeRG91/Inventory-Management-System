@@ -1,4 +1,4 @@
-using IMS.Plugins.EFCoreSql;
+﻿using IMS.Plugins.EFCoreSql;
 using IMS.Plugins.InMemory;
 using IMS.UseCases.Activities;
 using IMS.UseCases.Activities.Interfaces;
@@ -12,6 +12,10 @@ using IMS.UseCases.Reports.Interfaces;
 using IMS.WebApp.Components;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
+using IMS.WebApp.Components.Account;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using IMS.WebApp.Data.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +25,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
 {
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlite(builder.Configuration.GetConnectionString("AppDbContext"));
 });
 
 if (builder.Environment.IsEnvironment("Testing"))
@@ -62,6 +66,40 @@ builder.Services.AddTransient<ISellProductUseCase, SellProductUseCase>();
 builder.Services.AddTransient<ISearchInventoryTransactionsUseCase, SearchInventoryTransactionsUseCase>();
 builder.Services.AddTransient<ISearchProductTransactionsUseCase, SearchProductTransactionsUseCase>();
 
+builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<IdentityRedirectManager>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy => policy.RequireClaim("Department", "Administration"))
+    .AddPolicy("Inventory", policy => policy.RequireClaim("Department", "InventoryManagement"))
+    .AddPolicy("Sales", policy => policy.RequireClaim("Department", "Sales"))
+    .AddPolicy("Purchasers", policy => policy.RequireClaim("Department", "Purchasing"))
+    .AddPolicy("Productions", policy => policy.RequireClaim("Department", "ProductionManagement"));
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+    })
+    .AddIdentityCookies();
+
+builder.Services.AddDbContext<IMSIdentityContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("IMSIdentityContext")));
+
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+    })
+    .AddEntityFrameworkStores<IMSIdentityContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddSingleton<IEmailSender<IdentityUser>, IdentityNoOpEmailSender>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -79,5 +117,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapAdditionalIdentityEndpoints();;
 
 app.Run();

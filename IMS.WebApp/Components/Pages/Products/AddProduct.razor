@@ -1,5 +1,7 @@
 ﻿@page "/add-product"
 
+@attribute [Authorize(Policy = "Inventory")]
+
 @rendermode InteractiveServer 
 
 @inject IAddProductUseCase addProductUseCase

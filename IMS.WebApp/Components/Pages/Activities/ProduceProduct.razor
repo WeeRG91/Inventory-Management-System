@@ -1,10 +1,14 @@
 ﻿@page "/produce-product"
+
+@attribute [Authorize(Policy = "Productions")]
+
 @using static IMS.WebApp.Components.Controls.Common.AutoCompleteComponent
 
 @rendermode InteractiveServer
 
 @inject IJSRuntime JSRuntime
 
+@inject AuthenticationStateProvider authenticationStateProvider
 @inject IViewProductsByNameUseCase viewProductsByNameUseCase
 @inject IViewProductByIdUseCase viewProductByIdUseCase
 @inject IProduceProductUseCase produceProductUseCase
@@ -48,6 +52,13 @@
     private ProduceViewModel produceViewModel = new ProduceViewModel();
     private Product? selectedProduct = null;
 
+    private AuthenticationState? authenticationState;
+
+    protected async override Task OnInitializedAsync()
+    {
+        authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+    }
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
@@ -81,16 +92,22 @@
 
     private async Task Produce()
     {
-        if (selectedProduct != null)
+        string userName = string.Empty;
+        if (authenticationState?.User?.Identity?.IsAuthenticated ?? false)
         {
-            await produceProductUseCase.ExecuteAsync(
-                this.produceViewModel.ProductionNumber,
-                selectedProduct,
-                this.produceViewModel.QuantityToProduce,
-                "Frank"
-            );
-            this.produceViewModel = new ProduceViewModel();
-            this.selectedProduct = null;
+            userName = authenticationState.User.Identity.Name ?? string.Empty;
+
+            if (selectedProduct != null)
+            {
+                await produceProductUseCase.ExecuteAsync(
+                    this.produceViewModel.ProductionNumber,
+                    selectedProduct,
+                    this.produceViewModel.QuantityToProduce,
+                    userName
+                );
+                this.produceViewModel = new ProduceViewModel();
+                this.selectedProduct = null;
+            }
         }
     }
 }

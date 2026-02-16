@@ -1,11 +1,14 @@
 ﻿@page "/purchase-inventory"
 
+@attribute [Authorize(Policy = "Purchasers")]
+
 @using static IMS.WebApp.Components.Controls.Common.AutoCompleteComponent
 
 @rendermode InteractiveServer
 
 @inject IJSRuntime JSRuntime
 
+@inject AuthenticationStateProvider authenticationStateProvider
 @inject IViewInventoriesByNameUseCase viewInventoriesByNameUseCase
 @inject IViewInventoryByIdUseCase viewInventoryByIdUseCase
 @inject IPurchaseInventoryUseCase purchaseInventoryUseCase
@@ -52,8 +55,14 @@
 
 @code {
     private PurchaseViewModel purchaseViewModel = new PurchaseViewModel();
-
     private Inventory? selectedInventory = null;
+
+    private AuthenticationState? authenticationState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
+    }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -88,16 +97,23 @@
 
     private async Task Purchase()
     {
-        if (selectedInventory != null)
+        string userName = string.Empty;
+
+        if (authenticationState?.User?.Identity?.IsAuthenticated ?? false)
         {
-            await purchaseInventoryUseCase.ExecuteAsync(
-                this.purchaseViewModel.PONomber,
-                selectedInventory,
-                this.purchaseViewModel.QuantityToPurchse,
-                "Frank"
-            );
-            this.purchaseViewModel = new PurchaseViewModel();
-            this.selectedInventory = null;
+            userName = authenticationState.User.Identity.Name ?? string.Empty;
+
+            if (selectedInventory != null)
+            {
+                await purchaseInventoryUseCase.ExecuteAsync(
+                    this.purchaseViewModel.PONomber,
+                    selectedInventory,
+                    this.purchaseViewModel.QuantityToPurchse,
+                    userName
+                );
+                this.purchaseViewModel = new PurchaseViewModel();
+                this.selectedInventory = null;
+            }
         }
     }
 }
